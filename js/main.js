@@ -1,6 +1,26 @@
-import { renderPictures } from './pictureThumbnailsRenderer.js';
+import {getData} from './api.js';
+import {initGallery} from './gallery.js';
+import {hideFormUpload, initFormUpload} from './form-upload.js';
+import {debounce, showAlert} from './utils.js';
+import {initValidation} from './validation.js';
+import {changeFilter, showFilter} from './filter.js';
+import {setState, getState} from './state.js';
+import {renderSmallItems} from './small-items.js';
 
-const photos = renderPictures();
+const RENDER_DELAY = 500;
 
-// eslint-disable-next-line no-console
-console.log(photos);
+getData()
+  .then((items) => {
+    setState(items);
+  })
+  .then(() => {
+    renderSmallItems(getState());
+    initGallery(getState());
+    changeFilter(debounce(() => renderSmallItems(getState()), RENDER_DELAY));
+    showFilter();
+  })
+  .catch((err) => {
+    showAlert(err.message);
+  });
+
+initFormUpload(initValidation, hideFormUpload);
